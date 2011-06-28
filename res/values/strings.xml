@@ -2,4 +2,7 @@
 <resources>
     <string name="hello">Hello World, MainActivity!</string>
     <string name="app_name">Irccloud-android</string>
+    <string name="Email">email</string>
+    <string name="password">password</string>
+    <string name="login">login</string>
 </resources>
