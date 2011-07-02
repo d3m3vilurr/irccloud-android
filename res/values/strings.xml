@@ -5,4 +5,7 @@
     <string name="Email">email</string>
     <string name="password">password</string>
     <string name="login">login</string>
+    <string name="servername">servername</string>
+    <string name="channels">channels</string>
+    <string name="private_chats">private chats</string>
 </resources>

@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:orientation="vertical" android:layout_height="wrap_content">
-    <TableLayout android:id="@+id/tableLayout1" android:layout_weight="1" android:layout_height="wrap_content" android:layout_width="match_parent">
-        <TableRow android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/emailLabel">
-            <TextView android:textAppearance="?android:attr/textAppearanceMedium" android:layout_height="wrap_content" android:id="@+id/textView1" android:layout_width="wrap_content" android:layout_weight="0.3" android:text="@string/Email"></TextView>
-            <EditText android:inputType="textEmailAddress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/emailField">
-                <requestFocus></requestFocus>
-            </EditText>
-        </TableRow>
-        <TableRow android:id="@+id/tableRow2" android:layout_width="wrap_content" android:layout_height="wrap_content">
-            <TextView android:textAppearance="?android:attr/textAppearanceMedium" android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/textView2" android:text="@string/password" android:layout_weight="0.3"></TextView>
-            <EditText android:inputType="textPassword" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="1" android:id="@+id/passwordField"></EditText>
-        </TableRow>
-        <TableRow android:id="@+id/tableRow3" android:layout_width="wrap_content" android:layout_height="wrap_content">
-            <Button android:layout_weight="1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/login" android:id="@+id/loginButton"></Button>
-        </TableRow>
-        <TableRow android:id="@+id/tableRow4" android:layout_width="wrap_content" android:layout_height="wrap_content"></TableRow>
-        <TableRow android:id="@+id/tableRow5" android:layout_width="wrap_content" android:layout_height="wrap_content"></TableRow>
-    </TableLayout>
-</LinearLayout>
+<RelativeLayout android:id="@+id/LinearLayout1" xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:gravity="left" android:layout_width="wrap_content" android:layout_height="match_parent">
+    <ImageView android:layout_width="match_parent" android:src="@drawable/icon" android:id="@+id/imageView1" android:layout_height="match_parent"></ImageView>
+    <EditText android:layout_alignParentLeft="true" android:layout_above="@+id/textView2" android:layout_weight="1" android:id="@+id/emailField" android:layout_height="wrap_content" android:inputType="textEmailAddress" android:layout_width="match_parent"></EditText>
+    <TextView android:id="@+id/textView1" android:layout_width="wrap_content" android:text="@string/Email" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_above="@+id/emailField" android:layout_alignLeft="@+id/emailField"></TextView>
+    <TextView android:layout_alignParentLeft="true" android:layout_above="@+id/passwordField" android:id="@+id/textView2" android:text="@string/password" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="0.3" android:textAppearance="?android:attr/textAppearanceMedium"></TextView>
+    <EditText android:layout_alignParentLeft="true" android:layout_above="@+id/loginButton" android:id="@+id/passwordField" android:layout_height="wrap_content" android:layout_weight="1" android:autoText="false" android:inputType="textPassword" android:layout_width="match_parent"></EditText>
+    <Button android:layout_alignParentLeft="true" android:layout_alignParentBottom="true" android:text="@string/login" android:layout_height="wrap_content" android:id="@+id/loginButton" android:layout_weight="1" android:layout_width="match_parent"></Button>
+</RelativeLayout>
