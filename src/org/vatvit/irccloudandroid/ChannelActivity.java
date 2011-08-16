@@ -15,8 +15,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,13 +29,15 @@ public class ChannelActivity extends Activity {
 	private Server server;
 	private Channel channel;
 	private MessageAdapter adapter;
+	private ChannelListener chanListener;
+	private Client client;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.channel);
 		IRCCloudApplication app = ((IRCCloudApplication) getApplicationContext());
-		Client client = app.getClient();
+		client = app.getClient();
 		Bundle extras = getIntent().getExtras();
 
 		int cid = extras.getInt("cid");
@@ -74,24 +79,56 @@ public class ChannelActivity extends Activity {
 				channel.getMessages());
 		messages.setAdapter(adapter);
 
-		final Handler refresh = new Handler() {
-			public void handleMessage(Message msg) {
+
+		final Handler hRefresh = new Handler(){
+
+			@Override
+			public void handleMessage(android.os.Message msg) {
 				adapter.notifyDataSetChanged();
 			}
+			
 		};
-		
 
-		channel.addChannelListener(new ChannelListener(){
+		
+		chanListener = new ChannelListener(){
 			@Override
 			public void newMessage(Message message) {
 				Log.d(TAG, "New message "+message.getMsg()+" message count is "+channel.getMessages().size());
-				
-				refresh.sendEmptyMessage(0);
+				hRefresh.sendEmptyMessage(0);
 			}
-			
-		});
+		};
+		
+		
+		Button mSendButton = (Button) findViewById(R.id.button_send);
+        mSendButton.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                // Send a message using content of the edit text widget
+                EditText view = (EditText) findViewById(R.id.message);
+                String message = view.getText().toString();
+                view.setText("");
+                channel.sendMessage(message);
+            }
+        });
+
+
+	}
 	
+	public void onStop() {
+		super.onStop();
+		if(channel != null) {
+			channel.removeChannelListener(chanListener);
+			Log.d(TAG, "Removed listener. Channel has now "+channel.getChannelListeners().size()+" listeners");
+		}
+	}
 	
+	public void onResume() {
+		super.onResume();
+		if(channel != null) {
+			if(channel.getChannelListeners().indexOf(chanListener) == -1) {
+				channel.addChannelListener(chanListener);
+				Log.d(TAG, "Added listener back");
+			}
+		}
 	}
 	
 	public class MessageAdapter extends ArrayAdapter<Message> {
@@ -118,9 +155,9 @@ public class ChannelActivity extends Activity {
 				TextView by = (TextView) row.findViewById(R.id.by);
 				TextView time = (TextView) row.findViewById(R.id.time);
 				TextView msg = (TextView) row.findViewById(R.id.message);
-				by.setText(message.getFrom());
-				msg.setText(message.getMsg());
-				time.setText(message.getTime());
+				if(by != null) by.setText(message.getFrom());
+				if(msg != null) msg.setText(message.getMsg());
+				if(time != null) time.setText(message.getTime()+"");
 				
 			}
 			return row;

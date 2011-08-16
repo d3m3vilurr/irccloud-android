@@ -58,7 +58,7 @@ public class ServersActivity extends ListActivity {
 		final Handler hRefresh = new Handler(){
 			@Override
 			public void handleMessage(Message msg) {
-			    	 	adapter.notifyDataSetChanged();
+				adapter.notifyDataSetChanged();
 			   }
 			};
 

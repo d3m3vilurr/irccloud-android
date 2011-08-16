@@ -4,11 +4,6 @@
   android:orientation="vertical"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
-    <LinearLayout android:id="@+id/linearLayout1" android:layout_width="match_parent" android:orientation="vertical" android:layout_height="wrap_content">
-        <TextView android:id="@+id/textView1" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="@string/channels" android:layout_gravity="center" android:layout_width="wrap_content"></TextView>
-        <ListView android:layout_height="wrap_content" android:layout_width="match_parent" android:id="@+id/channelsListView"></ListView>
-        <TextView android:id="@+id/textView2" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceMedium" android:text="@string/private_chats" android:layout_width="wrap_content" android:layout_gravity="center"></TextView>
-        <ListView android:layout_height="wrap_content" android:layout_width="match_parent" android:id="@+id/privateChatsListView"></ListView>
-    </LinearLayout>
+    <ExpandableListView android:id="@+id/expandableListView1" android:layout_width="match_parent" android:layout_height="match_parent"></ExpandableListView>
     
 </ScrollView>

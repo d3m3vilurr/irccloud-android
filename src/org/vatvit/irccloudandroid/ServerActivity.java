@@ -10,32 +10,40 @@ import org.vatvit.irccloud.events.ServerListener;
 import org.vatvit.irccloudandroid.ServersActivity.ServerAdapter;
 
 import android.app.Activity;
+import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class ServerActivity extends Activity {
+public class ServerActivity extends ExpandableListActivity {
 	private static final String TAG = "IRCCloudServerActivity";
-	private ChannelAdapter channelAdapter;
-	private PrivateAdapter privateAdapter;
+	private ServerItemAdapter adapter;
 	private Server server = null;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		Log.d(TAG, "Server activity oppened");
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.server);
 
 		IRCCloudApplication app = ((IRCCloudApplication) getApplicationContext());
 		Client client = app.getClient();
@@ -54,123 +62,141 @@ public class ServerActivity extends Activity {
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
-		Log.d(TAG, "Server found "+server);
-		setTitle(server.getName());
-		
-		final ListView channelList = (ListView) findViewById(R.id.channelsListView);
-		channelAdapter = new ChannelAdapter(this, R.layout.channel_item,
-				server.getChannels());
-		channelList.setAdapter(channelAdapter);
-		channelList.setOnItemClickListener(new OnItemClickListener(){
+		Log.d(TAG, "Server found " + server);
+		setTitle(server.getName() + " - " + server.getNick() + "@"
+				+ server.getHostname());
 
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View v, int position,
-					long arg3) {
-				Channel channel = (Channel)channelList.getItemAtPosition(position);
-				Log.d(TAG, "Channel selected "+channel.toString());
-				Intent channelIntent = new Intent(v.getContext(),
-						ChannelActivity.class);
-				channelIntent.putExtra("cid", server.getCid());
-				channelIntent.putExtra("chan", channel.getName());
-				startActivity(channelIntent);
-			}
-			
-		});
-
-		ListView privateList = (ListView) findViewById(R.id.privateChatsListView);
-		privateAdapter = new PrivateAdapter(this, R.layout.channel_item,
-				server.getPrivates());
-		privateList.setAdapter(privateAdapter);
-
-		final Handler channelRefresh = new Handler() {
+		final Handler refresh = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
-				channelAdapter.notifyDataSetChanged();
-			}
-		};
-		final Handler privateRefresh = new Handler() {
-			@Override
-			public void handleMessage(Message msg) {
-				privateAdapter.notifyDataSetChanged();
+				adapter.notifyDataSetChanged();
 			}
 		};
 
-		server.addServerListener(new ServerListener(){
+		adapter = new ServerItemAdapter();
+		setListAdapter(adapter);
 
-			@Override
-			public void channelRemoved(Channel arg0) {
-				channelRefresh.sendEmptyMessage(0);
-				
-			}
-
-			@Override
-			public void newChannel(Channel arg0) {
-				channelRefresh.sendEmptyMessage(0);
-			}
-			
-		});
-		
 	}
 
-	public class ChannelAdapter extends ArrayAdapter<Channel> {
-		private ArrayList<Channel> channels;
+	public boolean onChildClick(ExpandableListView parent, View v,
+			int groupPosition, int childPosition, long id) {
+		if (groupPosition == 0) {
+			Channel channel = server.getChannels().get(childPosition);
+			Log.d(TAG, "Channel selected " + channel.toString());
+			Intent channelIntent = new Intent(v.getContext(),
+					ChannelActivity.class);
+			channelIntent.putExtra("cid", server.getCid());
+			channelIntent.putExtra("chan", channel.getName());
+			startActivity(channelIntent);
+		}
+		return false;
+	}
 
-		public ChannelAdapter(Context context, int textViewResourceId,
-				ArrayList<Channel> channels) {
-			super(context, textViewResourceId, channels);
-			this.channels = channels;
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.server_menu, menu);
+		return true;
+	}
+
+	public class ServerItemAdapter extends BaseExpandableListAdapter {
+		public Object getChild(int groupPosition, int childPosition) {
+			if (groupPosition == 0) {
+				return server.getChannels().get(childPosition);
+			} else {
+				return server.getPrivates().get(childPosition);
+			}
 		}
 
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater mInflater = getLayoutInflater();
-			View row;
+		public long getChildId(int groupPosition, int childPosition) {
+			return childPosition;
+		}
 
-			if (null == convertView) {
-				row = mInflater.inflate(R.layout.channel_item, null);
+		public int getChildrenCount(int groupPosition) {
+			if (groupPosition == 0) {
+				return server.getChannels().size();
 			} else {
-				row = convertView;
+				return server.getPrivates().size();
 			}
-			Channel channel = channels.get(position);
-			if (channel != null) {
-				TextView name = (TextView) row.findViewById(R.id.channelName);
-				TextView topic = (TextView) row.findViewById(R.id.topic);
-				name.setText(channel.getName());
-				if(channel.getTopic()!=null && !channel.getTopic().equalsIgnoreCase("null")) {
-					topic.setText(channel.getTopic()+" - by "+channel.getTopicAuthor());
+		}
+
+		public TextView getGenericView() {
+			// Layout parameters for the ExpandableListView
+			AbsListView.LayoutParams lp = new AbsListView.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT, 64);
+
+			TextView textView = new TextView(ServerActivity.this);
+			textView.setLayoutParams(lp);
+			// Center the text vertically
+			textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+			// Set the text starting position
+			textView.setPadding(36, 0, 0, 0);
+			return textView;
+		}
+
+		public View getChildView(int groupPosition, int childPosition,
+				boolean isLastChild, View convertView, ViewGroup parent) {
+			LayoutInflater mInflater = getLayoutInflater();
+			View row = null;
+			if (groupPosition == 0) {
+				if (null == convertView) {
+					row = mInflater.inflate(R.layout.channel_item, null);
 				} else {
-					topic.setText("");
+					row = convertView;
 				}
-			}
-			return row;
-		}
-	}
-
-	public class PrivateAdapter extends ArrayAdapter<Private> {
-		private ArrayList<Private> privates;
-
-		public PrivateAdapter(Context context, int textViewResourceId,
-				ArrayList<Private> privates) {
-			super(context, textViewResourceId, privates);
-			this.privates = privates;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater mInflater = getLayoutInflater();
-			View row;
-
-			if (null == convertView) {
-				row = mInflater.inflate(R.layout.private_item, null);
+				Channel channel = server.getChannels().get(childPosition);
+				if (channel != null) {
+					TextView name = (TextView) row
+							.findViewById(R.id.channelName);
+					TextView topic = (TextView) row.findViewById(R.id.topic);
+					name.setText(channel.getName());
+					if (channel.getTopic() != null
+							&& !channel.getTopic().equalsIgnoreCase("null")) {
+						topic.setText(channel.getTopic() + " - by "
+								+ channel.getTopicAuthor());
+					} else {
+						topic.setText("");
+					}
+				}
 			} else {
-				row = convertView;
+				row = getGenericView();
+				((TextView) row).setText(getChild(groupPosition, childPosition)
+						.toString());
 			}
-			Private priv = privates.get(position);
-			if (priv != null) {
 
-			}
 			return row;
 		}
+
+		public Object getGroup(int groupPosition) {
+			if (groupPosition == 0) {
+				return "Channels";
+			} else {
+				return "Private chats";
+			}
+		}
+
+		public int getGroupCount() {
+			return 2;
+		}
+
+		public long getGroupId(int groupPosition) {
+			return groupPosition;
+		}
+
+		public View getGroupView(int groupPosition, boolean isExpanded,
+				View convertView, ViewGroup parent) {
+			TextView textView = getGenericView();
+			textView.setText(getGroup(groupPosition).toString());
+			return textView;
+		}
+
+		public boolean isChildSelectable(int groupPosition, int childPosition) {
+			return true;
+		}
+
+		public boolean hasStableIds() {
+			return true;
+		}
+
 	}
 
 }
