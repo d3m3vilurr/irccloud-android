@@ -13,9 +13,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -100,17 +102,33 @@ public class ChannelActivity extends Activity {
 		
 		
 		Button mSendButton = (Button) findViewById(R.id.button_send);
-        mSendButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                // Send a message using content of the edit text widget
-                EditText view = (EditText) findViewById(R.id.message);
-                String message = view.getText().toString();
-                view.setText("");
-                channel.sendMessage(message);
-            }
-        });
+		final EditText message = (EditText) findViewById(R.id.send_message);
+		
+		mSendButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				sendMessage();
+			}
+		});
 
-
+		message.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (event.getAction() == KeyEvent.ACTION_DOWN && 
+					keyCode == KeyEvent.KEYCODE_ENTER) {
+					sendMessage();
+					return true;
+				}
+				return false;
+			}
+		});
+	}
+	
+	private void sendMessage() {
+		// Send a message using content of the edit text widget
+		EditText view = (EditText) findViewById(R.id.send_message);
+		String message = view.getText().toString();
+		view.setText("");
+		channel.sendMessage(message);
 	}
 	
 	public void onStop() {
