@@ -1,6 +1,10 @@
 package org.vatvit.irccloudandroid;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import org.vatvit.irccloud.Channel;
 import org.vatvit.irccloud.Client;
@@ -95,18 +99,22 @@ public class ChannelActivity extends Activity {
 		chanListener = new ChannelListener(){
 			@Override
 			public void newMessage(Message message) {
-				Log.d(TAG, "New message "+message.getMsg()+" message count is "+channel.getMessages().size());
+				//Log.d(TAG, "New message "+message.getMsg()+" message count is "+channel.getMessages().size());
 				hRefresh.sendEmptyMessage(0);
 			}
 		};
 		
 		
-		Button mSendButton = (Button) findViewById(R.id.button_send);
+		final Button mSendButton = (Button) findViewById(R.id.button_send);
 		final EditText message = (EditText) findViewById(R.id.send_message);
 		
 		mSendButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
-				sendMessage();
+				// Send a message using content of the edit text widget
+				EditText view = (EditText) findViewById(R.id.send_message);
+				String message = view.getText().toString();
+				view.setText("");
+				channel.sendMessage(message);
 			}
 		});
 
@@ -115,20 +123,12 @@ public class ChannelActivity extends Activity {
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if (event.getAction() == KeyEvent.ACTION_DOWN && 
 					keyCode == KeyEvent.KEYCODE_ENTER) {
-					sendMessage();
+					mSendButton.performClick();
 					return true;
 				}
 				return false;
 			}
 		});
-	}
-	
-	private void sendMessage() {
-		// Send a message using content of the edit text widget
-		EditText view = (EditText) findViewById(R.id.send_message);
-		String message = view.getText().toString();
-		view.setText("");
-		channel.sendMessage(message);
 	}
 	
 	public void onStop() {
@@ -173,10 +173,11 @@ public class ChannelActivity extends Activity {
 				TextView by = (TextView) row.findViewById(R.id.by);
 				TextView time = (TextView) row.findViewById(R.id.time);
 				TextView msg = (TextView) row.findViewById(R.id.message);
-				if(by != null) by.setText(message.getFrom());
+				if(by != null) by.setText("<"+message.getFrom()+">");
 				if(msg != null) msg.setText(message.getMsg());
-				if(time != null) time.setText(message.getTime()+"");
-				
+				Date date = message.getDateTime();
+				String hour_min = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date);
+				if(time != null) time.setText(hour_min);
 			}
 			return row;
 		}
