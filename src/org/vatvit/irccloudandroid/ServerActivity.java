@@ -49,7 +49,7 @@ public class ServerActivity extends ExpandableListActivity {
 		Client client = app.getClient();
 		Bundle extras = getIntent().getExtras();
 
-		int cid = extras.getInt("cid");
+		long cid = extras.getLong("cid");
 		for (Server serv : client.getServers()) {
 			if (serv.getCid() == cid) {
 				server = serv;
